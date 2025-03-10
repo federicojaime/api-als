@@ -1,0 +1,16 @@
+{
+    "require": {
+        "slim/slim": "4.*",
+        "php-di/php-di": "^7.0",
+        "slim/psr7": "^1.6",
+        "tuupola/slim-jwt-auth": "^3.7",
+        "vlucas/phpdotenv": "^5.5",
+        "phpmailer/phpmailer": "^6.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "objects\\": "objects",
+            "utils\\": "utils"
+        }
+    }
+}
