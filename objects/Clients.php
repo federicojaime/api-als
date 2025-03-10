@@ -13,8 +13,14 @@ class Clients extends Base
             $params = [];
 
             if (isset($filters['search']) && !empty($filters['search'])) {
-                $query .= " AND (business_name LIKE :search OR tax_id LIKE :search)";
-                $params['search'] = '%' . $filters['search'] . '%';
+                // Opción 1: Usar diferentes nombres de parámetros para cada condición
+                $query .= " AND (business_name LIKE :search_name OR tax_id LIKE :search_tax)";
+                $params['search_name'] = '%' . $filters['search'] . '%';
+                $params['search_tax'] = '%' . $filters['search'] . '%';
+
+                // O alternativamente, opción 2: Usar OR directo sin parámetros separados
+                // $query .= " AND (business_name LIKE :search OR tax_id LIKE :search)";
+                // $params['search'] = '%' . $filters['search'] . '%';
             }
 
             if (isset($filters['status']) && $filters['status'] !== 'todos') {
@@ -90,11 +96,11 @@ class Clients extends Base
             ];
 
             $this->add($query, $params);
-            
+
             if ($this->getResult()->ok) {
                 return $this->getClient($this->getResult()->data['newId']);
             }
-            
+
             return $this;
         } catch (\Exception $e) {
             $result = new \stdClass();
@@ -153,11 +159,11 @@ class Clients extends Base
             ];
 
             $this->update($query, $params);
-            
+
             if ($this->getResult()->ok) {
                 return $this->getClient($id);
             }
-            
+
             return $this;
         } catch (\Exception $e) {
             $result = new \stdClass();

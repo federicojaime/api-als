@@ -102,7 +102,41 @@ class Base
 
     public function getAllWithParams($query, array $values)
     {
-        $this->execSql($query, Registers::All, $values);
+        $this->reset();
+        try {
+            $stmt = $this->conn->prepare($query);
+            if (!empty($values)) {
+                foreach ($values as $key => $value) {
+                    if (is_bool($value)) {
+                        $stmt->bindValue(":" . $key, $value, \PDO::PARAM_BOOL);
+                    } elseif (is_null($value)) {
+                        $stmt->bindValue(":" . $key, $value, \PDO::PARAM_NULL);
+                    } elseif (is_int($value)) {
+                        $stmt->bindValue(":" . $key, $value, \PDO::PARAM_INT);
+                    } else {
+                        $stmt->bindValue(":" . $key, $value, \PDO::PARAM_STR);
+                    }
+                }
+            }
+            $stmt->execute();
+            $this->result->data = $stmt->fetchAll(\PDO::FETCH_OBJ);
+        } catch (\PDOException $e) {
+            $this->result->ok = false;
+            $this->result->msg = $e->getMessage();
+            $this->result->data = null;
+        }
+    }
+    protected function getParamType($value)
+    {
+        if (is_bool($value)) {
+            return \PDO::PARAM_BOOL;
+        } elseif (is_null($value)) {
+            return \PDO::PARAM_NULL;
+        } elseif (is_int($value)) {
+            return \PDO::PARAM_INT;
+        } else {
+            return \PDO::PARAM_STR;
+        }
     }
 
     public function add($query, array $values)

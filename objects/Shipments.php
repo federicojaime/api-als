@@ -85,7 +85,7 @@ class Shipments extends Base
             }
 
             if (isset($filters['search']) && !empty($filters['search'])) {
-                $query .= " AND (s.customer LIKE :search OR s.destination_address LIKE :search)";
+                $query .= " AND (s.customer LIKE :search OR s.destination_address LIKE :search OR s.ref_code LIKE :search)";
                 $params['search'] = '%' . $filters['search'] . '%';
             }
 
@@ -145,33 +145,55 @@ class Shipments extends Base
         }
     }
 
+    // Eliminado el método generateRefCode() ya que el ref_code lo proporcionará el frontend
+
     public function createShipment($data)
     {
         try {
             $this->pdo->beginTransaction();
+            
+            // El ref_code siempre debe ser proporcionado por el frontend
+            // No se genera automáticamente
 
             $query = "INSERT INTO {$this->table_name} 
-                      (customer, origin_address, destination_address, status, shipping_cost, driver_id, created_at, updated_at)
-                      VALUES (:customer, :origin_address, :destination_address, :status, :shipping_cost, :driver_id, NOW(), NOW())";
+                      (ref_code, customer, origin_address, origin_lat, origin_lng, 
+                      destination_address, destination_lat, destination_lng, 
+                      status, shipping_cost, driver_id, 
+                      lift_gate, appointment, pallet_jack, comments,
+                      created_at, updated_at)
+                      VALUES (:ref_code, :customer, :origin_address, :origin_lat, :origin_lng,
+                      :destination_address, :destination_lat, :destination_lng,
+                      :status, :shipping_cost, :driver_id,
+                      :lift_gate, :appointment, :pallet_jack, :comments,
+                      NOW(), NOW())";
 
             $stmt = $this->pdo->prepare($query);
             $stmt->execute([
+                'ref_code' => $data->ref_code,
                 'customer' => $data->customer,
                 'origin_address' => $data->origin_address,
+                'origin_lat' => $data->origin_lat ?? null,
+                'origin_lng' => $data->origin_lng ?? null,
                 'destination_address' => $data->destination_address,
+                'destination_lat' => $data->destination_lat ?? null,
+                'destination_lng' => $data->destination_lng ?? null,
                 'status' => $data->status ?? 'pendiente',
                 'shipping_cost' => $data->shipping_cost,
                 'driver_id' => $data->driver_id,
+                'lift_gate' => $data->lift_gate ?? 'NO',
+                'appointment' => $data->appointment ?? 'NO',
+                'pallet_jack' => $data->pallet_jack ?? 'NO',
+                'comments' => $data->comments ?? null
             ]);
 
             $shipmentId = $this->pdo->lastInsertId();
 
             if (isset($data->items) && is_array($data->items)) {
                 foreach ($data->items as $item) {
-                    if (!isset($item['descripcion']) && !isset($item['description'])) continue;
-                    if (!isset($item['cantidad']) && !isset($item['quantity'])) continue;
-                    if (!isset($item['peso']) && !isset($item['weight'])) continue;
-                    if (!isset($item['valor']) && !isset($item['value'])) continue;
+                    if (!isset($item['description']) && !isset($item['descripcion'])) continue;
+                    if (!isset($item['quantity']) && !isset($item['cantidad'])) continue;
+                    if (!isset($item['weight']) && !isset($item['peso'])) continue;
+                    if (!isset($item['value']) && !isset($item['valor'])) continue;
 
                     $queryItem = "INSERT INTO {$this->items_table} 
                                   (shipment_id, description, quantity, weight, value)
@@ -180,10 +202,10 @@ class Shipments extends Base
                     $stmtItem = $this->pdo->prepare($queryItem);
                     $stmtItem->execute([
                         'shipment_id' => $shipmentId,
-                        'description' => $item['descripcion'] ?? $item['description'],
-                        'quantity' => $item['cantidad'] ?? $item['quantity'],
-                        'weight' => $item['peso'] ?? $item['weight'],
-                        'value' => $item['valor'] ?? $item['value']
+                        'description' => $item['description'] ?? $item['descripcion'],
+                        'quantity' => $item['quantity'] ?? $item['cantidad'],
+                        'weight' => $item['weight'] ?? $item['peso'],
+                        'value' => $item['value'] ?? $item['valor']
                     ]);
                 }
             }
@@ -228,23 +250,41 @@ class Shipments extends Base
 
             // Actualizar información principal
             $query = "UPDATE {$this->table_name} SET 
+                      ref_code = :ref_code,
                       customer = :customer,
                       origin_address = :origin_address,
+                      origin_lat = :origin_lat,
+                      origin_lng = :origin_lng,
                       destination_address = :destination_address,
+                      destination_lat = :destination_lat,
+                      destination_lng = :destination_lng,
                       status = :status,
                       shipping_cost = :shipping_cost,
                       driver_id = :driver_id,
+                      lift_gate = :lift_gate,
+                      appointment = :appointment,
+                      pallet_jack = :pallet_jack,
+                      comments = :comments,
                       updated_at = NOW()
                       WHERE id = :id";
 
             $stmt = $this->pdo->prepare($query);
             $stmt->execute([
+                'ref_code' => $data->ref_code,
                 'customer' => $data->customer,
                 'origin_address' => $data->origin_address,
+                'origin_lat' => $data->origin_lat ?? null,
+                'origin_lng' => $data->origin_lng ?? null,
                 'destination_address' => $data->destination_address,
+                'destination_lat' => $data->destination_lat ?? null,
+                'destination_lng' => $data->destination_lng ?? null,
                 'status' => $data->status,
                 'shipping_cost' => $data->shipping_cost,
                 'driver_id' => $data->driver_id,
+                'lift_gate' => $data->lift_gate ?? 'NO',
+                'appointment' => $data->appointment ?? 'NO',
+                'pallet_jack' => $data->pallet_jack ?? 'NO',
+                'comments' => $data->comments ?? null,
                 'id' => $data->id
             ]);
 

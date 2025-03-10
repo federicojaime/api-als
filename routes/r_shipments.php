@@ -34,6 +34,11 @@ $app->post("/shipment", function (Request $request, Response $response, array $a
     $uploadedFiles = $request->getUploadedFiles();
 
     $verificar = [
+        "ref_code" => [
+            "type" => "string",
+            "min" => 3,
+            "max" => 20
+        ],
         "customer" => [
             "type" => "string",
             "min" => 3,
@@ -58,6 +63,52 @@ $app->post("/shipment", function (Request $request, Response $response, array $a
         ]
     ];
 
+    // Validaciones opcionales para los campos de coordenadas y servicios
+    if (isset($fields['origin_lat'])) {
+        $verificar['origin_lat'] = [
+            "type" => "string"
+        ];
+    }
+
+    if (isset($fields['origin_lng'])) {
+        $verificar['origin_lng'] = [
+            "type" => "string"
+        ];
+    }
+
+    if (isset($fields['destination_lat'])) {
+        $verificar['destination_lat'] = [
+            "type" => "string"
+        ];
+    }
+
+    if (isset($fields['destination_lng'])) {
+        $verificar['destination_lng'] = [
+            "type" => "string"
+        ];
+    }
+
+    if (isset($fields['lift_gate'])) {
+        $verificar['lift_gate'] = [
+            "type" => "string",
+            "values" => ["YES", "NO"]
+        ];
+    }
+
+    if (isset($fields['appointment'])) {
+        $verificar['appointment'] = [
+            "type" => "string",
+            "values" => ["YES", "NO"]
+        ];
+    }
+
+    if (isset($fields['pallet_jack'])) {
+        $verificar['pallet_jack'] = [
+            "type" => "string",
+            "values" => ["YES", "NO"]
+        ];
+    }
+
     $validacion = new Validate($this->get("db"));
     $validacion->validar($fields, $verificar);
 
@@ -72,15 +123,19 @@ $app->post("/shipment", function (Request $request, Response $response, array $a
     // Procesar items
     $items = [];
     if (isset($fields['items'])) {
-        $items = json_decode($fields['items'], true);
-        if (!is_array($items)) {
-            $resp = new \stdClass();
-            $resp->ok = false;
-            $resp->msg = "Formato de items inválido";
-            $response->getBody()->write(json_encode($resp));
-            return $response
-                ->withHeader("Content-Type", "application/json")
-                ->withStatus(409);
+        if (is_string($fields['items'])) {
+            $items = json_decode($fields['items'], true);
+            if (!is_array($items)) {
+                $resp = new \stdClass();
+                $resp->ok = false;
+                $resp->msg = "Formato de items inválido";
+                $response->getBody()->write(json_encode($resp));
+                return $response
+                    ->withHeader("Content-Type", "application/json")
+                    ->withStatus(409);
+            }
+        } else {
+            $items = $fields['items'];
         }
     }
     $fields['items'] = $items;
@@ -136,6 +191,11 @@ $app->put("/shipment/{id:[0-9]+}", function (Request $request, Response $respons
     $uploadedFiles = $request->getUploadedFiles();
 
     $verificar = [
+        "ref_code" => [
+            "type" => "string",
+            "min" => 3,
+            "max" => 20
+        ],
         "customer" => [
             "type" => "string",
             "min" => 3,
@@ -159,6 +219,29 @@ $app->put("/shipment/{id:[0-9]+}", function (Request $request, Response $respons
             "exist" => "users"
         ]
     ];
+
+    // Validaciones para campos opcionales
+    if (isset($fields['origin_lat'])) {
+        $verificar['origin_lat'] = ["type" => "string"];
+    }
+    if (isset($fields['origin_lng'])) {
+        $verificar['origin_lng'] = ["type" => "string"];
+    }
+    if (isset($fields['destination_lat'])) {
+        $verificar['destination_lat'] = ["type" => "string"];
+    }
+    if (isset($fields['destination_lng'])) {
+        $verificar['destination_lng'] = ["type" => "string"];
+    }
+    if (isset($fields['lift_gate'])) {
+        $verificar['lift_gate'] = ["type" => "string", "values" => ["YES", "NO"]];
+    }
+    if (isset($fields['appointment'])) {
+        $verificar['appointment'] = ["type" => "string", "values" => ["YES", "NO"]];
+    }
+    if (isset($fields['pallet_jack'])) {
+        $verificar['pallet_jack'] = ["type" => "string", "values" => ["YES", "NO"]];
+    }
 
     $validacion = new Validate($this->get("db"));
     $validacion->validar($fields, $verificar);

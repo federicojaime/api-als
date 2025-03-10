@@ -92,7 +92,7 @@ $app->post("/user", function (Request $request, Response $response, array $args)
         ],
         "role" => [
             "type" => "string",
-            "values" => ["admin", "transportista"]
+            "values" => ["admin", "transportista", "contable"]
         ]
     ];
 
@@ -154,7 +154,7 @@ $app->patch("/user/{id:[0-9]+}", function (Request $request, Response $response,
     if (isset($fields['role'])) {
         $verificar['role'] = [
             "type" => "string",
-            "values" => ["admin", "transportista"]
+            "values" => ["admin", "transportista", "contable"]
         ];
     }
 
