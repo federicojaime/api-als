@@ -14,12 +14,18 @@ $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
 $container->set("db", function () {
-	$con = array(
+	/*$con = array(
 		"host" => "localhost",
 		"dbname" => "logistica_db",
 		"user" => "root",
 		"pass" => ""
-	);
+	);*/
+	$con = array(
+        "host" => $_ENV["DB_HOST"] ?? "localhost",
+        "dbname" => $_ENV["DB_NAME"] ?? "u565673608_als",
+        "user" => $_ENV["DB_USER"] ?? "u565673608_als",
+        "pass" => $_ENV["DB_PASS"] ?? "C/@^[~3>kO"
+    ); 
 	$pdo = new PDO("mysql:host=" . $con["host"] . ";dbname=" . $con["dbname"], $con["user"], $con["pass"], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
 	$pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 	$pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
@@ -84,6 +90,8 @@ require_once("routes/r_invoices.php");
 require_once("routes/r_quickbooks.php");
 require_once("routes/r_shipments.php");
 require_once("routes/r_clients.php");
+require_once("routes/r_item_descriptions.php");
+
 
 $app->map(["GET", "POST", "PUT", "DELETE", "PATCH"], "/{routes:.+}", function ($request, $response) {
 	throw new HttpNotFoundException($request);
