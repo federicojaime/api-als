@@ -151,26 +151,31 @@ class Shipments extends Base
     {
         try {
             $this->pdo->beginTransaction();
-            
+
             // El ref_code siempre debe ser proporcionado por el frontend
             // No se genera automáticamente
 
             $query = "INSERT INTO {$this->table_name} 
-                      (ref_code, customer, origin_address, origin_lat, origin_lng, 
-                      destination_address, destination_lat, destination_lng, 
-                      status, shipping_cost, driver_id, 
-                      lift_gate, appointment, pallet_jack, comments,
-                      created_at, updated_at)
-                      VALUES (:ref_code, :customer, :origin_address, :origin_lat, :origin_lng,
-                      :destination_address, :destination_lat, :destination_lng,
-                      :status, :shipping_cost, :driver_id,
-                      :lift_gate, :appointment, :pallet_jack, :comments,
-                      NOW(), NOW())";
+                  (ref_code, customer, subclient, subclient_id, client_id, 
+                  origin_address, origin_lat, origin_lng, 
+                  destination_address, destination_lat, destination_lng, 
+                  status, shipping_cost, driver_id, 
+                  lift_gate, appointment, pallet_jack, comments,
+                  created_at, updated_at)
+                  VALUES (:ref_code, :customer, :subclient, :subclient_id, :client_id,
+                  :origin_address, :origin_lat, :origin_lng,
+                  :destination_address, :destination_lat, :destination_lng,
+                  :status, :shipping_cost, :driver_id,
+                  :lift_gate, :appointment, :pallet_jack, :comments,
+                  NOW(), NOW())";
 
             $stmt = $this->pdo->prepare($query);
             $stmt->execute([
                 'ref_code' => $data->ref_code,
                 'customer' => $data->customer,
+                'subclient' => $data->subclient ?? null,
+                'subclient_id' => $data->subclient_id ?? null,
+                'client_id' => $data->client_id ?? null,
                 'origin_address' => $data->origin_address,
                 'origin_lat' => $data->origin_lat ?? null,
                 'origin_lng' => $data->origin_lng ?? null,
@@ -250,28 +255,34 @@ class Shipments extends Base
 
             // Actualizar información principal
             $query = "UPDATE {$this->table_name} SET 
-                      ref_code = :ref_code,
-                      customer = :customer,
-                      origin_address = :origin_address,
-                      origin_lat = :origin_lat,
-                      origin_lng = :origin_lng,
-                      destination_address = :destination_address,
-                      destination_lat = :destination_lat,
-                      destination_lng = :destination_lng,
-                      status = :status,
-                      shipping_cost = :shipping_cost,
-                      driver_id = :driver_id,
-                      lift_gate = :lift_gate,
-                      appointment = :appointment,
-                      pallet_jack = :pallet_jack,
-                      comments = :comments,
-                      updated_at = NOW()
-                      WHERE id = :id";
+                  ref_code = :ref_code,
+                  customer = :customer,
+                  subclient = :subclient,
+                  subclient_id = :subclient_id,
+                  client_id = :client_id,
+                  origin_address = :origin_address,
+                  origin_lat = :origin_lat,
+                  origin_lng = :origin_lng,
+                  destination_address = :destination_address,
+                  destination_lat = :destination_lat,
+                  destination_lng = :destination_lng,
+                  status = :status,
+                  shipping_cost = :shipping_cost,
+                  driver_id = :driver_id,
+                  lift_gate = :lift_gate,
+                  appointment = :appointment,
+                  pallet_jack = :pallet_jack,
+                  comments = :comments,
+                  updated_at = NOW()
+                  WHERE id = :id";
 
             $stmt = $this->pdo->prepare($query);
             $stmt->execute([
                 'ref_code' => $data->ref_code,
                 'customer' => $data->customer,
+                'subclient' => $data->subclient ?? null,
+                'subclient_id' => $data->subclient_id ?? null,
+                'client_id' => $data->client_id ?? null,
                 'origin_address' => $data->origin_address,
                 'origin_lat' => $data->origin_lat ?? null,
                 'origin_lng' => $data->origin_lng ?? null,

@@ -115,3 +115,28 @@ $app->delete("/client/{id:[0-9]+}", function (Request $request, Response $respon
         ->withHeader("Content-Type", "application/json")
         ->withStatus($resp->ok ? 200 : 409);
 });
+
+
+// GET - Obtener subclientes de un cliente específico
+$app->get("/clients/{id:[0-9]+}/subclients", function (Request $request, Response $response, array $args) {
+    // Esta ruta debería estar conectada a una función que obtiene los subclientes, 
+    // pero como no veo la estructura de subclientes en la API actual, sugiero crearla.
+    // Por ahora, devolvemos un formato básico que el frontend ya espera:
+
+    $pdo = $this->get("db");
+    $query = "SELECT id, name, business_name, tax_id FROM subclients WHERE client_id = :client_id";
+    $stmt = $pdo->prepare($query);
+    $stmt->bindParam(':client_id', $args['id'], PDO::PARAM_INT);
+    $stmt->execute();
+    $subclients = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+    $resp = new \stdClass();
+    $resp->ok = true;
+    $resp->msg = "";
+    $resp->data = $subclients;
+
+    $response->getBody()->write(json_encode($resp));
+    return $response
+        ->withHeader("Content-Type", "application/json")
+        ->withStatus(200);
+});
