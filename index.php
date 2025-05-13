@@ -91,6 +91,7 @@ require_once("routes/r_quickbooks.php");
 require_once("routes/r_shipments.php");
 require_once("routes/r_clients.php");
 require_once("routes/r_item_descriptions.php");
+require_once("routes/r_statistics.php"); // Agregar esta línea
 
 
 $app->map(["GET", "POST", "PUT", "DELETE", "PATCH"], "/{routes:.+}", function ($request, $response) {
